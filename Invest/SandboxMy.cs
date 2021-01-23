@@ -201,8 +201,7 @@ namespace Invest
                         {
                             minusOper++;
                         }
-                    }                   
-
+                    }   
 
                     //if(maSlowPred != 0 && maFastPred !=0 && maFastPred < maSlowPred && maFast >= maSlow)
                     //{
