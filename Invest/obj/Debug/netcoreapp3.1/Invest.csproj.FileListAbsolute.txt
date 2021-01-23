@@ -1,0 +1,17 @@
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Invest.exe
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Invest.deps.json
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Invest.runtimeconfig.json
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Invest.runtimeconfig.dev.json
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Invest.dll
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Invest.pdb
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Macross.Json.Extensions.dll
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\System.Text.Json.dll
+C:\Users\gvozd\source\repos\Invest\Invest\bin\Debug\netcoreapp3.1\Tinkoff.Trading.OpenApi.dll
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.csprojAssemblyReference.cache
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.AssemblyInfoInputs.cache
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.AssemblyInfo.cs
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.csproj.CoreCompileInputs.cache
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.csproj.CopyComplete
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.dll
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.pdb
+C:\Users\gvozd\source\repos\Invest\Invest\obj\Debug\netcoreapp3.1\Invest.genruntimeconfig.cache

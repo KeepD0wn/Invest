@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "bKJQUL8pTG10JBNR7jrAsbN5jr1toQv8MgjfhKcFv+glsgkCSymf0I/H7A/vIXiZCpZRhPE7/BV9Oz0/WBYdlA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\gvozd\\source\\repos\\Invest\\Invest\\Invest.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gvozd\\.nuget\\packages\\macross.json.extensions\\1.5.0\\macross.json.extensions.1.5.0.nupkg.sha512",
+    "C:\\Users\\gvozd\\.nuget\\packages\\system.text.json\\5.0.0\\system.text.json.5.0.0.nupkg.sha512",
+    "C:\\Users\\gvozd\\.nuget\\packages\\tinkoff.trading.openapi\\1.7.0\\tinkoff.trading.openapi.1.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}
