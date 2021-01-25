@@ -27,6 +27,7 @@ namespace Invest
         int slowCountEma = 17;
         decimal kSlow = 0;
 
+        decimal macdLast = 0;
         decimal macd = 0;
         decimal spreadMacdSignal = 0;
         decimal spreadMacdSignalLast = 0;
@@ -40,6 +41,11 @@ namespace Invest
              
         decimal priceOfClosingPlus = 0;
         decimal priceOfClosingMinus = 0;
+
+        int plusOperAll = 0;
+        int minusOperAll = 0;
+
+        //Queue<decimal> last5SpreqdAvg
 
         int countOfOperationsMonth;
 
@@ -74,8 +80,8 @@ namespace Invest
             // get candles
             //var now = DateTime.Now;           
             //now = now.AddDays(-3);
-            int monthNumber = 1;
-            int year = 2021;            
+            int monthNumber = 12;
+            int year = 2020;            
             int daysInMonth = DateTime.DaysInMonth(year,monthNumber);
 
             for (int day=1;day<=daysInMonth;day++)
@@ -128,6 +134,7 @@ namespace Invest
                     emaSlow = Math.Round(emaSlowLast + (kSlow * (candleList.Candles[i].Close - emaSlowLast)),5);
                     emaSlowLast = emaSlow;
 
+                    macdLast = macd;
                     macd = emaFast - emaSlow;
 
                     signal = Math.Round(signalLast + (kSignal * (macd - signalLast)), 10);
@@ -136,46 +143,57 @@ namespace Invest
                     spreadMacdSignalLast = spreadMacdSignal;
                     spreadMacdSignal = macd - signal;
 
-                    if (i < slowCountEma)
+                    if (i < slowCountEma )
                         continue;
 
                     if (spreadMacdSignalLast >= spreadMacdSignal)
                     {
                         spreadMacdSignalFallInRow += 1;
-                       // spreadMacdSignalGrowthInRow = 0;
+                        spreadMacdSignalGrowthInRow = 0;
                     }
                     else
                     {
                         spreadMacdSignalGrowthInRow += 1;
-                       // spreadMacdSignalFallInRow = 0;
+                        spreadMacdSignalFallInRow = 0;
                     }
 
                     // ВЫШЕ ВЫЧИСЛЕНИЯ ВСЕКИХ НУЖНЫХ ПЕРЕМЕННЫХ
                     // комент снизу вроде как помогоает если менять число акций 
-                    if (spreadMacdSignalGrowthInRow >= 2 && countOfStock < 1) // || countOfStock < 1 && spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
+                    if (signalLast > macdLast && signal <= macd && countOfStock < 1 ) // || countOfStock < 1 && spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
                         balance -= candleList.Candles[i].Close;
                         priceOfStock = candleList.Candles[i].Close;
                         priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.002);
-                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.996);
+                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.998);
                     }
+                   
 
-                    if (countOfStock != 0 && candleList.Candles[i].High > priceOfClosingPlus)
-                    {
-                        balance += priceOfClosingPlus * countOfStock;
-                        countOfStock = 0;     
-                        plusOper++;
-                        
-                    }
-                    //else if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus)
+                    //if (countOfStock != 0 && candleList.Candles[i].High > priceOfClosingPlus)
                     //{
-                    //    balance += priceOfClosingMinus * countOfStock;
-                    //    countOfStock = 0;
-                    //}
+                    //    balance += priceOfClosingPlus * countOfStock;
+                    //    countOfStock = 0;     
+                    //    plusOper++;
 
-                    if (countOfStock != 0 && spreadMacdSignalFallInRow >= 2 && priceOfStock < candleList.Candles[i].Close) // для бага && priceOfStock < candleList.Candles[i].Close
+                    //}
+                    if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && spreadMacdSignalFallInRow>=2)
+                    {
+                        balance += priceOfClosingMinus * countOfStock;
+                        countOfStock = 0;
+
+                        if (priceOfClosingMinus > priceOfStock)
+                        {
+                            plusOper++;
+                        }
+                        else
+                        {
+                            minusOper++;
+                        }
+                    }
+
+                    //countOfStock != 0 && spreadMacdSignalFallInRow >= 2 было изначально
+                    if (countOfStock != 0 && signalLast < macdLast && signal >= macd && Math.Abs(spreadMacdSignal) > (decimal)0.06) // для бага && priceOfStock < candleList.Candles[i].Close
                     {
                         balance += candleList.Candles[i].Close * countOfStock;                        
                         countOfStock = 0;
@@ -189,7 +207,7 @@ namespace Invest
                         }
                     }
 
-                    if (countOfStock != 0 && candleList.Candles.Count-1 == i) 
+                    if (countOfStock != 0 && candleList.Candles.Count-1 == i ) 
                     {
                         balance += candleList.Candles[i].Close * countOfStock;
                         countOfStock = 0;
@@ -228,9 +246,11 @@ namespace Invest
                 Console.WriteLine($"В {day}-торговый день баланс составил {balance}, операций в день {countOfOperationsDay}." +
                     $" В плюс {plusOper}, в минус {minusOper}");
                 countOfOperationsMonth += countOfOperationsDay;
+                plusOperAll += plusOper;
+                minusOperAll += minusOper;
             }
 
-            Console.WriteLine($"Всего операций за месяц {countOfOperationsMonth}");
+            Console.WriteLine($"Всего операций за месяц {countOfOperationsMonth}. Положительных {plusOperAll}. Отрицательных {minusOperAll}");
 
             k = await _context.MarketOrderbookAsync(randomInstrument.Figi, 10); // выводит стакан
             e = await _context.PortfolioAsync(_accountId); // весь портфель
