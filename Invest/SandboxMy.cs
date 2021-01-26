@@ -27,6 +27,7 @@ namespace Invest
         int slowCountEma = 17;
         decimal kSlow = 0;
 
+        decimal macdLast = 0;
         decimal macd = 0;
         decimal spreadMacdSignal = 0;
         decimal spreadMacdSignalLast = 0;
@@ -41,16 +42,44 @@ namespace Invest
         decimal priceOfClosingPlus = 0;
         decimal priceOfClosingMinus = 0;
 
+        int plusOperAll = 0;
+        int minusOperAll = 0;        
         int countOfOperationsMonth;
+
+        decimal emaFastSell = 0;
+        decimal emaFastLastSell = 0;
+        int fastCountEmaSell = 12;
+        decimal kFastSell = 0;
+
+        decimal emaSlowSell = 0;
+        decimal emaSlowLastSell = 0;
+        int slowCountEmaSell = 26;
+        decimal kSlowSell = 0;
+
+        decimal macdLastSell = 0;
+        decimal macdSell = 0;
+        decimal spreadMacdSignalSell = 0;
+        decimal spreadMacdSignalLastSell = 0;
+        decimal spreadMacdSignalGrowthInRowSell = 0;
+        decimal spreadMacdSignalFallInRowSell = 0;
+
+        decimal signalSell = 0;
+        decimal signalLastSell = 0;
+
+        Queue<bool> readyToSell = new Queue<bool>();
+        int queueCount = 5;
 
         public SandboxMy(string token)
         {
             var connection = ConnectionFactory.GetSandboxConnection(token);
             _context = connection.Context;
 
-            kFast = Math.Round(2 / (decimal)(fastCountEma+1),4);
+            kFast = Math.Round(2 / (decimal)(fastCountEma + 1),4);
             kSlow = Math.Round(2 / (decimal)(slowCountEma + 1), 4);
             kSignal = Math.Round(2 / (decimal)(signalCount + 1), 4);
+
+            kFastSell = Math.Round(2 / (decimal)(fastCountEmaSell + 1), 4);
+            kSlowSell = Math.Round(2 / (decimal)(slowCountEmaSell + 1), 4);
         }
 
         public async Task StartAsync()
@@ -74,8 +103,8 @@ namespace Invest
             // get candles
             //var now = DateTime.Now;           
             //now = now.AddDays(-3);
-            int monthNumber = 1;
-            int year = 2021;            
+            int year = 2020;
+            int monthNumber = 10;
             int daysInMonth = DateTime.DaysInMonth(year,monthNumber);
 
             for (int day=1;day<=daysInMonth;day++)
@@ -96,10 +125,21 @@ namespace Invest
                 spreadMacdSignalFallInRow = 0;
                 spreadMacdSignalGrowthInRow = 0;
 
+                emaFastLastSell = 0;
+                emaSlowLastSell = 0;
+                emaFastSell = 0;
+                emaSlowSell = 0;
+                macdSell = 0;
+                signalSell = 0;
+                signalLastSell = 0;
+                spreadMacdSignalSell = 0;
+                spreadMacdSignalFallInRowSell = 0;
+                spreadMacdSignalGrowthInRowSell = 0;
+
                 int plusOper = 0;
                 int minusOper = 0;
 
-                if(day == 9)
+                if(day == 25)
                 {
 
                 }
@@ -108,7 +148,7 @@ namespace Invest
                 var candleList = await _context.MarketCandlesAsync(randomInstrument.Figi, now, now.AddHours(9).AddMinutes(50), CandleInterval.FiveMinutes);
                 for (int i = 1; i < candleList.Candles.Count; i++)
                 {
-                    if(i == 38)
+                    if(i == 34)
                     {
 
                     }
@@ -122,60 +162,140 @@ namespace Invest
                         emaSlowLast = candleList.Candles[i - 1].Close;
                     }
 
+                    if (emaFastLastSell == 0)
+                    {
+                        emaFastLastSell = candleList.Candles[i - 1].Close;
+                    }
+                    if (emaSlowLastSell == 0)
+                    {
+                        emaSlowLastSell = candleList.Candles[i - 1].Close;
+                    }
+
                     emaFast = Math.Round(emaFastLast + (kFast * (candleList.Candles[i].Close - emaFastLast)),5);
                     emaFastLast = emaFast;
 
                     emaSlow = Math.Round(emaSlowLast + (kSlow * (candleList.Candles[i].Close - emaSlowLast)),5);
                     emaSlowLast = emaSlow;
 
+                    macdLast = macd;
                     macd = emaFast - emaSlow;
 
-                    signal = Math.Round(signalLast + (kSignal * (macd - signalLast)), 10);
+                    signal = Math.Round(signalLast + (kSignal * (macd - signalLast)), 10);                   
                     signalLast = signal;
 
                     spreadMacdSignalLast = spreadMacdSignal;
                     spreadMacdSignal = macd - signal;
 
-                    if (i < slowCountEma)
+                    //ot
+
+                    emaFastSell = Math.Round(emaFastLastSell + (kFastSell * (candleList.Candles[i].Close - emaFastLastSell)), 5);
+                    emaFastLastSell = emaFastSell;
+
+                    emaSlowSell = Math.Round(emaSlowLastSell + (kSlowSell * (candleList.Candles[i].Close - emaSlowLastSell)), 5);
+                    emaSlowLastSell = emaSlowSell;
+
+                    macdLastSell = macdSell;
+                    macdSell = emaFastSell - emaSlowSell;
+
+                    signalSell = Math.Round(signalLastSell + (kSignal * (macdSell - signalLastSell)), 10);
+                    signalLastSell = signalSell;
+
+                    spreadMacdSignalLastSell = spreadMacdSignalSell;
+                    spreadMacdSignalSell = macdSell - signalSell;
+
+                    if (i < slowCountEma+8 )
                         continue;
 
                     if (spreadMacdSignalLast >= spreadMacdSignal)
                     {
                         spreadMacdSignalFallInRow += 1;
-                       // spreadMacdSignalGrowthInRow = 0;
+                        spreadMacdSignalGrowthInRow = 0;
                     }
                     else
                     {
                         spreadMacdSignalGrowthInRow += 1;
-                       // spreadMacdSignalFallInRow = 0;
+                        spreadMacdSignalFallInRow = 0;
+                    }
+
+                    if (spreadMacdSignalLastSell >= spreadMacdSignalSell)
+                    {
+                        spreadMacdSignalFallInRowSell += 1;
+                        spreadMacdSignalGrowthInRowSell = 0;
+
+                        if (readyToSell.Count < queueCount)
+                        {
+                            readyToSell.Enqueue(true);
+                        }                            
+                        else
+                        {
+                            readyToSell.Dequeue();
+                            readyToSell.Enqueue(true);
+                        }
+                    }
+                    else
+                    {
+                        spreadMacdSignalGrowthInRowSell += 1;
+                        spreadMacdSignalFallInRowSell = 0;
+
+                        if (readyToSell.Count < queueCount)
+                        {
+                            readyToSell.Enqueue(false);
+                        }
+                        else
+                        {
+                            readyToSell.Dequeue();
+                            readyToSell.Enqueue(false);
+                        }
                     }
 
                     // ВЫШЕ ВЫЧИСЛЕНИЯ ВСЕКИХ НУЖНЫХ ПЕРЕМЕННЫХ
-                    // комент снизу вроде как помогоает если менять число акций 
-                    if (spreadMacdSignalGrowthInRow >= 2 && countOfStock < 1) // || countOfStock < 1 && spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
+                    bool mustBuy = false;
+
+                    if (spreadMacdSignalLast < 0 && spreadMacdSignal >= 0)
+                    {
+                        mustBuy = true;
+                    }
+                    else if (spreadMacdSignalLast > 0 && spreadMacdSignal <= 0)
+                    {
+                        mustBuy = false;
+                    }
+
+                    //&& spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
+                    if ( countOfStock < 1 && mustBuy==true && ReadyToSell() ==false ) // смотрим пробил ли макд сигнальную линию вверх
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
                         balance -= candleList.Candles[i].Close;
                         priceOfStock = candleList.Candles[i].Close;
                         priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.002);
-                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.996);
+                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.998);
                     }
 
-                    if (countOfStock != 0 && candleList.Candles[i].High > priceOfClosingPlus)
-                    {
-                        balance += priceOfClosingPlus * countOfStock;
-                        countOfStock = 0;     
-                        plusOper++;
-                        
-                    }
-                    //else if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus)
+
+                    //if (countOfStock != 0 && candleList.Candles[i].High > priceOfClosingPlus)
                     //{
-                    //    balance += priceOfClosingMinus * countOfStock;
+                    //    balance += priceOfClosingPlus * countOfStock;
                     //    countOfStock = 0;
-                    //}
+                    //    plusOper++;
 
-                    if (countOfStock != 0 && spreadMacdSignalFallInRow >= 2 && priceOfStock < candleList.Candles[i].Close) // для бага && priceOfStock < candleList.Candles[i].Close
+                    //}
+                    if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && spreadMacdSignalFallInRowSell>=2)
+                    {
+                        balance += priceOfClosingMinus * countOfStock;
+                        countOfStock = 0;
+
+                        if (priceOfClosingMinus > priceOfStock)
+                        {
+                            plusOper++;
+                        }
+                        else
+                        {
+                            minusOper++;
+                        }
+                    }
+
+                    //countOfStock != 0 && spreadMacdSignalFallInRow >= 2 было изначально && Math.Abs(spreadMacdSignal) > (decimal)0.06
+                    if (countOfStock != 0 && signalLast < macdLastSell && signal >= macdSell && priceOfStock < candleList.Candles[i].Close) // для бага && priceOfStock < candleList.Candles[i].Close
                     {
                         balance += candleList.Candles[i].Close * countOfStock;                        
                         countOfStock = 0;
@@ -189,7 +309,7 @@ namespace Invest
                         }
                     }
 
-                    if (countOfStock != 0 && candleList.Candles.Count-1 == i) 
+                    if (countOfStock != 0 && candleList.Candles.Count-1 == i ) 
                     {
                         balance += candleList.Candles[i].Close * countOfStock;
                         countOfStock = 0;
@@ -228,9 +348,11 @@ namespace Invest
                 Console.WriteLine($"В {day}-торговый день баланс составил {balance}, операций в день {countOfOperationsDay}." +
                     $" В плюс {plusOper}, в минус {minusOper}");
                 countOfOperationsMonth += countOfOperationsDay;
+                plusOperAll += plusOper;
+                minusOperAll += minusOper;
             }
 
-            Console.WriteLine($"Всего операций за месяц {countOfOperationsMonth}");
+            Console.WriteLine($"Всего операций за месяц {countOfOperationsMonth}. Положительных {plusOperAll}. Отрицательных {minusOperAll}");
 
             k = await _context.MarketOrderbookAsync(randomInstrument.Figi, 10); // выводит стакан
             e = await _context.PortfolioAsync(_accountId); // весь портфель
@@ -274,5 +396,21 @@ namespace Invest
         {
             if (_accountId != null) await _context.RemoveAsync(_accountId);
         }
+
+        public bool ReadyToSell()
+        {
+            double count = 0;
+
+            foreach(var c in readyToSell)
+            {
+                if (c == true)
+                {
+                    count += 1;
+                }
+            }
+
+            return count >= Math.Ceiling((double)queueCount/2) ? true : false;
+        }
+
     }
 }
