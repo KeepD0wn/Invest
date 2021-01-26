@@ -67,7 +67,7 @@ namespace Invest
             _accountId = sandboxAccount.BrokerAccountId;
 
             // select random instrument
-            var instrumentList = await _context.MarketSearchByTickerAsync("save");
+            var instrumentList = await _context.MarketSearchByTickerAsync("tsla");
             // var randomInstrumentIndex = Random.Next(instrumentList.Total);
             var randomInstrument = instrumentList.Instruments[0];
             Console.WriteLine($"Selected Instrument: {randomInstrument.Name}");
@@ -159,7 +159,7 @@ namespace Invest
 
                     // ВЫШЕ ВЫЧИСЛЕНИЯ ВСЕКИХ НУЖНЫХ ПЕРЕМЕННЫХ
                     // комент снизу вроде как помогоает если менять число акций 
-                    if (signalLast > macdLast && signal <= macd && countOfStock < 1 ) // || countOfStock < 1 && spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
+                    if ( countOfStock < 1 && spreadMacdSignalLast < 0 && spreadMacdSignal >= 0 ) // || countOfStock < 1 && spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
