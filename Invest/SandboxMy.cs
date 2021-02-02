@@ -90,7 +90,7 @@ namespace Invest
             _accountId = sandboxAccount.BrokerAccountId;
 
             // select random instrument
-            var instrumentList = await _context.MarketSearchByTickerAsync("save");
+            var instrumentList = await _context.MarketSearchByTickerAsync("nvda");
             // var randomInstrumentIndex = Random.Next(instrumentList.Total);
             var randomInstrument = instrumentList.Instruments[0];
             Console.WriteLine($"Selected Instrument: {randomInstrument.Name}");
@@ -104,7 +104,7 @@ namespace Invest
             //var now = DateTime.Now;           
             //now = now.AddDays(-3);
             int year = 2020;
-            int monthNumber = 10;
+            int monthNumber = 12;
             int daysInMonth = DateTime.DaysInMonth(year,monthNumber);
 
             for (int day=1;day<=daysInMonth;day++)
@@ -146,7 +146,7 @@ namespace Invest
 
                 var now = new DateTime(year, monthNumber, day, 13, 55, 0);         // на 1 свечу больше, тк 1-я свеча идёт на образование EMA  
                 var candleList = await _context.MarketCandlesAsync(randomInstrument.Figi, now, now.AddHours(9).AddMinutes(50), CandleInterval.FiveMinutes);
-                for (int i = 1; i < candleList.Candles.Count; i++)
+                for (int i = 1; i < candleList.Candles.Count-1; i++)
                 {
                     if(i == 34)
                     {
@@ -261,12 +261,12 @@ namespace Invest
                     }
 
                     //&& spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
-                    if ( countOfStock < 1 && mustBuy==true && ReadyToSell() ==false ) // смотрим пробил ли макд сигнальную линию вверх
+                    if ( countOfStock < 1 && mustBuy==true  ) // смотрим пробил ли макд сигнальную линию вверх
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
-                        balance -= candleList.Candles[i].Close;
-                        priceOfStock = candleList.Candles[i].Close;
+                        priceOfStock = candleList.Candles[i].Close ;
+                        balance -= priceOfStock * (decimal)1.00025;                       
                         priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.002);
                         priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.998);
                     }
@@ -279,25 +279,25 @@ namespace Invest
                     //    plusOper++;
 
                     //}
-                    if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && spreadMacdSignalFallInRowSell>=2)
-                    {
-                        balance += priceOfClosingMinus * countOfStock;
-                        countOfStock = 0;
+                    //if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && ReadyToSell() ==true)
+                    //{
+                    //    balance += priceOfClosingMinus * countOfStock * (decimal)0.99975;
+                    //    countOfStock = 0;
 
-                        if (priceOfClosingMinus > priceOfStock)
-                        {
-                            plusOper++;
-                        }
-                        else
-                        {
-                            minusOper++;
-                        }
-                    }
+                    //    if (priceOfClosingMinus > priceOfStock)
+                    //    {
+                    //        plusOper++;
+                    //    }
+                    //    else
+                    //    {
+                    //        minusOper++;
+                    //    }
+                    //}
 
                     //countOfStock != 0 && spreadMacdSignalFallInRow >= 2 было изначально && Math.Abs(spreadMacdSignal) > (decimal)0.06
-                    if (countOfStock != 0 && signalLast < macdLastSell && signal >= macdSell && priceOfStock < candleList.Candles[i].Close) // для бага && priceOfStock < candleList.Candles[i].Close
+                    if (countOfStock != 0 && spreadMacdSignalLastSell > 0 && spreadMacdSignalSell <= 0) // для бага && priceOfStock < candleList.Candles[i].Close
                     {
-                        balance += candleList.Candles[i].Close * countOfStock;                        
+                        balance += candleList.Candles[i].Close * countOfStock * (decimal)0.99975;                        
                         countOfStock = 0;
                         if (candleList.Candles[i].Close > priceOfStock)
                         {
@@ -309,9 +309,9 @@ namespace Invest
                         }
                     }
 
-                    if (countOfStock != 0 && candleList.Candles.Count-1 == i ) 
+                    if (countOfStock != 0 && candleList.Candles.Count-2 == i ) 
                     {
-                        balance += candleList.Candles[i].Close * countOfStock;
+                        balance += candleList.Candles[i].Close * countOfStock * (decimal)0.99975;
                         countOfStock = 0;
                         if (candleList.Candles[i].Close > priceOfStock)
                         {
