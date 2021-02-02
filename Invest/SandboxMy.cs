@@ -67,7 +67,7 @@ namespace Invest
         decimal signalLastSell = 0;
 
         Queue<bool> readyToSell = new Queue<bool>();
-        int queueCount = 5;
+        int queueCount = 4;
 
         public SandboxMy(string token)
         {
@@ -103,8 +103,8 @@ namespace Invest
             // get candles
             //var now = DateTime.Now;           
             //now = now.AddDays(-3);
-            int year = 2020;
-            int monthNumber = 12;
+            int year = 2021;
+            int monthNumber = 1;
             int daysInMonth = DateTime.DaysInMonth(year,monthNumber);
 
             for (int day=1;day<=daysInMonth;day++)
@@ -261,7 +261,7 @@ namespace Invest
                     }
 
                     //&& spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
-                    if ( countOfStock < 1 && mustBuy==true  ) // смотрим пробил ли макд сигнальную линию вверх
+                    if ( countOfStock < 1 && mustBuy==true ) // смотрим пробил ли макд сигнальную линию вверх
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
@@ -279,20 +279,20 @@ namespace Invest
                     //    plusOper++;
 
                     //}
-                    //if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && ReadyToSell() ==true)
-                    //{
-                    //    balance += priceOfClosingMinus * countOfStock * (decimal)0.99975;
-                    //    countOfStock = 0;
+                    if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && spreadMacdSignalFallInRowSell >= 2)
+                    {
+                        balance += priceOfClosingMinus * countOfStock * (decimal)0.99975;
+                        countOfStock = 0;
 
-                    //    if (priceOfClosingMinus > priceOfStock)
-                    //    {
-                    //        plusOper++;
-                    //    }
-                    //    else
-                    //    {
-                    //        minusOper++;
-                    //    }
-                    //}
+                        if (priceOfClosingMinus > priceOfStock)
+                        {
+                            plusOper++;
+                        }
+                        else
+                        {
+                            minusOper++;
+                        }
+                    }
 
                     //countOfStock != 0 && spreadMacdSignalFallInRow >= 2 было изначально && Math.Abs(spreadMacdSignal) > (decimal)0.06
                     if (countOfStock != 0 && spreadMacdSignalLastSell > 0 && spreadMacdSignalSell <= 0) // для бага && priceOfStock < candleList.Candles[i].Close
