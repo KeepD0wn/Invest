@@ -294,8 +294,9 @@ namespace Invest
                         }
                     }
 
-                    //countOfStock != 0 && spreadMacdSignalFallInRow >= 2 было изначально && Math.Abs(spreadMacdSignal) > (decimal)0.06
-                    if (countOfStock != 0 && spreadMacdSignalLastSell > 0 && spreadMacdSignalSell <= 0) // для бага && priceOfStock < candleList.Candles[i].Close
+                    //countOfStock != 0 && spreadMacdSignalLastSell > 0 && spreadMacdSignalSell <= 0
+                    //countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2 было изначально && Math.Abs(spreadMacdSignal) > (decimal)0.06
+                    if (countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2 && priceOfStock < candleList.Candles[i].Close) // для бага && priceOfStock < candleList.Candles[i].Close
                     {
                         balance += candleList.Candles[i].Close * countOfStock * (decimal)0.99975;                        
                         countOfStock = 0;
