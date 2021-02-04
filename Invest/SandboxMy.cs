@@ -261,7 +261,7 @@ namespace Invest
                     }
 
                     //&& spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
-                    if ( countOfStock < 1 && mustBuy==true ) // смотрим пробил ли макд сигнальную линию вверх
+                    if ( countOfStock < 1 && mustBuy==true) // смотрим пробил ли макд сигнальную линию вверх
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
@@ -293,10 +293,9 @@ namespace Invest
                             minusOper++;
                         }
                     }
-
-                    //countOfStock != 0 && spreadMacdSignalLastSell > 0 && spreadMacdSignalSell <= 0
-                    //countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2 было изначально && Math.Abs(spreadMacdSignal) > (decimal)0.06
-                    if (countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2 && priceOfStock < candleList.Candles[i].Close) // для бага && priceOfStock < candleList.Candles[i].Close
+                                        
+                    // && Math.Abs(spreadMacdSignal) > (decimal)0.06
+                    if (countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2 && priceOfStock < candleList.Candles[i].Close ) // для бага && priceOfStock < candleList.Candles[i].Close
                     {
                         balance += candleList.Candles[i].Close * countOfStock * (decimal)0.99975;                        
                         countOfStock = 0;
