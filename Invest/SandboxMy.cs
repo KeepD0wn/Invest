@@ -103,8 +103,8 @@ namespace Invest
             // get candles
             //var now = DateTime.Now;           
             //now = now.AddDays(-3);
-            int year = 2021;
-            int monthNumber = 1;
+            int year = 2020;
+            int monthNumber = 11;
             int daysInMonth = DateTime.DaysInMonth(year,monthNumber);
 
             for (int day=1;day<=daysInMonth;day++)
@@ -267,8 +267,8 @@ namespace Invest
                         countOfOperationsDay++;
                         priceOfStock = candleList.Candles[i].Close ;
                         balance -= priceOfStock * (decimal)1.00025;                       
-                        priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.002);
-                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.998);
+                        priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.01);
+                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.999);
                     }
 
 
