@@ -90,7 +90,7 @@ namespace Invest
             _accountId = sandboxAccount.BrokerAccountId;
 
             // select random instrument
-            var instrumentList = await _context.MarketSearchByTickerAsync("nvda");
+            var instrumentList = await _context.MarketSearchByTickerAsync("save");
             // var randomInstrumentIndex = Random.Next(instrumentList.Total);
             var randomInstrument = instrumentList.Instruments[0];
             Console.WriteLine($"Selected Instrument: {randomInstrument.Name}");
@@ -103,8 +103,8 @@ namespace Invest
             // get candles
             //var now = DateTime.Now;           
             //now = now.AddDays(-3);
-            int year = 2020;
-            int monthNumber = 11;
+            int year = 2021;
+            int monthNumber = 1;
             int daysInMonth = DateTime.DaysInMonth(year,monthNumber);
 
             for (int day=1;day<=daysInMonth;day++)
@@ -139,16 +139,18 @@ namespace Invest
                 int plusOper = 0;
                 int minusOper = 0;
 
-                if(day == 25)
+                if(day == 5)
                 {
 
                 }
 
                 var now = new DateTime(year, monthNumber, day, 13, 55, 0);         // на 1 свечу больше, тк 1-я свеча идёт на образование EMA  
                 var candleList = await _context.MarketCandlesAsync(randomInstrument.Figi, now, now.AddHours(9).AddMinutes(50), CandleInterval.FiveMinutes);
+                bool Macd9ChangedToBuy = false;
+                bool Macd12ChangedToSell = false;
                 for (int i = 1; i < candleList.Candles.Count-1; i++)
                 {
-                    if(i == 34)
+                    if(i == 53)
                     {
 
                     }
@@ -217,10 +219,10 @@ namespace Invest
                         spreadMacdSignalFallInRow = 0;
                     }
 
-                    if (spreadMacdSignalLastSell >= spreadMacdSignalSell)
+                    if (spreadMacdSignalSell >= spreadMacdSignalLastSell)
                     {
-                        spreadMacdSignalFallInRowSell += 1;
-                        spreadMacdSignalGrowthInRowSell = 0;
+                        spreadMacdSignalFallInRowSell = 0;
+                        spreadMacdSignalGrowthInRowSell += 1;
 
                         if (readyToSell.Count < queueCount)
                         {
@@ -234,8 +236,8 @@ namespace Invest
                     }
                     else
                     {
-                        spreadMacdSignalGrowthInRowSell += 1;
-                        spreadMacdSignalFallInRowSell = 0;
+                        spreadMacdSignalGrowthInRowSell = 0;
+                        spreadMacdSignalFallInRowSell += 1;
 
                         if (readyToSell.Count < queueCount)
                         {
@@ -248,58 +250,67 @@ namespace Invest
                         }
                     }
 
-                    // ВЫШЕ ВЫЧИСЛЕНИЯ ВСЕКИХ НУЖНЫХ ПЕРЕМЕННЫХ
-                    bool mustBuy = false;
+                    // ВЫШЕ ВЫЧИСЛЕНИЯ ВСЕКИХ НУЖНЫХ ПЕРЕМЕННЫХ                   
 
                     if (spreadMacdSignalLast < 0 && spreadMacdSignal >= 0)
                     {
-                        mustBuy = true;
+                        Macd9ChangedToBuy = true;
                     }
                     else if (spreadMacdSignalLast > 0 && spreadMacdSignal <= 0)
                     {
-                        mustBuy = false;
+                        Macd9ChangedToBuy = false;
                     }
 
-                    //&& spreadMacdSignalLast < 0 && spreadMacdSignal >= 0
-                    if ( countOfStock < 1 && mustBuy==true) // смотрим пробил ли макд сигнальную линию вверх
+                    if (spreadMacdSignalLastSell < 0 && spreadMacdSignalSell >= 0)
+                    {
+                        Macd12ChangedToSell = false;
+                    }
+                    else if (spreadMacdSignalLastSell > 0 && spreadMacdSignalSell <= 0)
+                    {
+                        Macd12ChangedToSell = true;
+                    }
+
+                    //&& spreadMacdSignal >= (decimal)0.005
+                    if ( countOfStock < 1 && Macd9ChangedToBuy==true ) // смотрим пробил ли макд сигнальную линию вверх
                     {
                         countOfStock += 1;
                         countOfOperationsDay++;
-                        priceOfStock = candleList.Candles[i].Close ;
+                        priceOfStock = candleList.Candles[i+1].Open ;
                         balance -= priceOfStock * (decimal)1.00025;                       
-                        priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.01);
-                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.999);
+                        priceOfClosingPlus = Decimal.Multiply(priceOfStock, (decimal)1.003);
+                        priceOfClosingMinus = Decimal.Multiply(priceOfStock, (decimal)0.995);
                     }
 
 
-                    //if (countOfStock != 0 && candleList.Candles[i].High > priceOfClosingPlus)
+                    if (countOfStock != 0 && candleList.Candles[i].High > priceOfClosingPlus)
+                    {
+                        balance += priceOfClosingPlus * countOfStock;
+                        countOfStock = 0;
+                        plusOper++;
+
+                    }
+                    //if (countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2)
                     //{
-                    //    balance += priceOfClosingPlus * countOfStock;
+                    //    balance += candleList.Candles[i + 1].Open * countOfStock * (decimal)0.99975;
                     //    countOfStock = 0;
-                    //    plusOper++;
+                    //    Macd9ChangedToBuy = false;
 
+                    //    if (candleList.Candles[i + 1].Open > priceOfStock)
+                    //    {
+                    //        plusOper++;
+                    //    }
+                    //    else
+                    //    {
+                    //        minusOper++;
+                    //    }
                     //}
-                    if (countOfStock != 0 && candleList.Candles[i].Low < priceOfClosingMinus && spreadMacdSignalFallInRowSell >= 2)
-                    {
-                        balance += priceOfClosingMinus * countOfStock * (decimal)0.99975;
-                        countOfStock = 0;
 
-                        if (priceOfClosingMinus > priceOfStock)
-                        {
-                            plusOper++;
-                        }
-                        else
-                        {
-                            minusOper++;
-                        }
-                    }
-                                        
                     // && Math.Abs(spreadMacdSignal) > (decimal)0.06
-                    if (countOfStock != 0 && spreadMacdSignalFallInRowSell >= 2 && priceOfStock < candleList.Candles[i].Close ) // для бага && priceOfStock < candleList.Candles[i].Close
+                    if (countOfStock != 0 && Macd12ChangedToSell == true && spreadMacdSignalFallInRowSell >= 1) // для бага && priceOfStock < candleList.Candles[i].Close
                     {
-                        balance += candleList.Candles[i].Close * countOfStock * (decimal)0.99975;                        
+                        balance += candleList.Candles[i+1].Open * countOfStock * (decimal)0.99975;                        
                         countOfStock = 0;
-                        if (candleList.Candles[i].Close > priceOfStock)
+                        if (candleList.Candles[i + 1].Open > priceOfStock)
                         {
                             plusOper++;
                         }
@@ -311,9 +322,9 @@ namespace Invest
 
                     if (countOfStock != 0 && candleList.Candles.Count-2 == i ) 
                     {
-                        balance += candleList.Candles[i].Close * countOfStock * (decimal)0.99975;
+                        balance += candleList.Candles[i+1].Open * countOfStock * (decimal)0.99975;
                         countOfStock = 0;
-                        if (candleList.Candles[i].Close > priceOfStock)
+                        if (candleList.Candles[i + 1].Open > priceOfStock)
                         {
                             plusOper++;
                         }
